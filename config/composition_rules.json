@@ -1,0 +1,10 @@
+{
+    "incompatible_combinations": {
+      "STA_ArmsCrossed": ["ACT_DrinkCoffee"],
+      "EXP_TearyEyes": ["STA_Stand_Power"]
+    },
+    "recommended_pairs": {
+      "ACT_SlamTable": ["EXP_Surprised"],
+      "STA_Sit_Lazy": ["EXP_Smirk"]
+    }
+  }

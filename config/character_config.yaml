@@ -1,0 +1,15 @@
+character:
+  name: "AI研究员"
+  age: 20
+  personality: ENFJ
+  default_components:
+    sta: STA_Stand_Default
+    exp: EXP_Neutral
+    bg: BG_Lab
+
+paths:
+  sta_dir: "assets/sta"
+  exp_dir: "assets/exp"
+  act_dir: "assets/act"
+  bg_dir: "assets/bg"
+  cg_dir: "assets/cg"
