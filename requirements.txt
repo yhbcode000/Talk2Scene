@@ -1,0 +1,23 @@
+# Core Dependencies
+numpy>=1.21.0
+requests>=2.26.0
+moviepy>=1.0.3
+psutil>=5.8.0
+PyYAML>=6.0.0
+python-dotenv>=0.19.0
+
+# OpenAI API
+openai>=0.27.0
+
+# FFmpeg for MoviePy
+ffmpeg-python>=0.2.0
+
+# Logging and Monitoring
+loguru>=0.6.0
+
+# Async and Parallel Processing
+asyncio>=3.4.3
+concurrent-log-handler>=0.9.20
+
+# Optional (for advanced features)
+stability-sdk>=0.3.0  # For Stable Diffusion integration
