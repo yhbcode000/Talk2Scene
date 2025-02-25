@@ -110,7 +110,15 @@ paths:
 设置 OpenAI API 密钥为环境变量：  
 ```bash
 export OPENAI_API_KEY="your-api-key"
+
 ```  
+或者 自己新建.env文件
+
+```txt
+OPENAI_API_KEY=你的key
+WHISPER_URL=https://api.openai.com/v1/audio/transcriptions
+CHAT_URL=https://api.openai.com/v1/chat/completions
+```
 
 ---
 

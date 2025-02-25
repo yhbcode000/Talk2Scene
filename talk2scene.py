@@ -16,6 +16,11 @@ import requests
 import yaml
 from moviepy.editor import *
 from moviepy.config import change_settings
+from dotenv import load_dotenv
+from tenacity import retry, stop_after_attempt, wait_fixed, RetryError
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configure FFmpeg path
 change_settings({"FFMPEG_BINARY": "/usr/bin/ffmpeg"})
@@ -45,27 +50,36 @@ class ILLMService(ABC):
 # ======================== Core Implementations ========================
 class WhisperTranscriber(ITranscriber):
     """OpenAI Whisper transcription implementation."""
+    
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(10))
     def transcribe(self, audio_path: str) -> str:
-        try:
-            with open(audio_path, "rb") as f:
+        with open(audio_path, "rb") as f:
+            f.seek(0)  # 确保文件指针位置正确
+            try:
                 response = requests.post(
-                    "https://api.openai.com/v1/audio/transcriptions",
+                    os.getenv('WHISPER_URL', 'https://api.openai.com/v1/audio/transcriptions'),
                     headers={"Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}"},
                     files={"file": f},
-                    data={"model": "whisper-1"}
+                    data={"model": os.getenv('WHISPER_MODEL', 'whisper-1')},
+                    timeout=30  # 超时设置已存在
                 )
                 response.raise_for_status()
                 return response.json()["text"]
-        except Exception as e:
-            logger.error(f"Transcription failed: {str(e)}")
-            raise
+            except requests.exceptions.Timeout as te:
+                logger.error(f"Transcription timed out: {str(te)}")
+                raise ValueError("请求超时，请稍后重试") from te
+            except requests.exceptions.RequestException as e:
+                logger.error(f"Transcription failed: {str(e)}")
+                raise
 
 class GPTSceneGenerator(ILLMService):
     """GPT-4 scene generation implementation."""
+    
+    @retry(stop=stop_after_attempt(3), wait=wait_fixed(10))
     def generate_scenes(self, text: str) -> List[Dict]:
         try:
             response = requests.post(
-                "https://api.openai.com/v1/chat/completions",
+                os.getenv('CHAT_URL', 'https://api.openai.com/v1/chat/completions'),
                 headers={
                     "Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}",
                     "Content-Type": "application/json"
@@ -79,11 +93,15 @@ class GPTSceneGenerator(ILLMService):
                         "role": "user", 
                         "content": text
                     }]
-                }
+                },
+                timeout=30  # Add timeout to prevent indefinite hanging
             )
             response.raise_for_status()
             return json.loads(response.json()["choices"][0]["message"]["content"])
-        except Exception as e:
+        except requests.exceptions.Timeout as te:
+            logger.error(f"Scene generation timed out: {str(te)}")
+            raise ValueError("请求超时，请稍后重试") from te
+        except requests.exceptions.RequestException as e:
             logger.error(f"Scene generation failed: {str(e)}")
             raise
 
